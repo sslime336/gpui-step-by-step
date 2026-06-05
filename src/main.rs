@@ -1,9 +1,9 @@
 mod base_view;
+mod components;
 
-use gpui::{
-    AppContext, Application, Bounds, Context, IntoElement, ParentElement, Point, Render, Size,
-    Styled, Window, WindowBounds, WindowOptions, div, px, rgb,
-};
+use gpui::{AppContext, Application, Bounds, Point, Size, WindowBounds, WindowOptions, px};
+
+use crate::base_view::BaseView;
 
 fn main() {
     let app = Application::new();
@@ -16,21 +16,8 @@ fn main() {
                 })),
                 ..Default::default()
             },
-            |_window, cx| cx.new(|_cx| MyView {}),
+            |_window, cx| cx.new(|cx| BaseView::new(cx)),
         )
         .ok();
     });
-}
-struct MyView {}
-
-impl Render for MyView {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
-        div()
-            .flex()
-            .size_full()
-            .items_center()
-            .justify_center()
-            .bg(rgb(0xffffff))
-            .child("Hello, world!")
-    }
 }
