@@ -1,11 +1,19 @@
 use gpui::{
-    Context, CursorStyle, InteractiveElement, IntoElement, ParentElement, Render, SharedString,
-    StatefulInteractiveElement, Styled, Window, div, rgb,
+    Context, CursorStyle, EventEmitter, InteractiveElement, IntoElement, MouseButton,
+    ParentElement, Render, SharedString, Styled, Window, div, rgb,
 };
 
 pub struct Button {
     text: SharedString,
 }
+
+pub enum ClickButtonEvent {
+    LeftClick,
+    RightClick,
+    MiddleClick,
+}
+
+impl EventEmitter<ClickButtonEvent> for Button {}
 
 impl Button {
     pub fn new(text: &str) -> Button {
@@ -16,7 +24,7 @@ impl Button {
 }
 
 impl Render for Button {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .id(self.text.clone())
             .flex()
@@ -29,8 +37,23 @@ impl Render for Button {
             .rounded_sm()
             .hover(|style| style.cursor(CursorStyle::PointingHand).bg(rgb(0x615F73)))
             .child(self.text.clone())
-            .on_click(|_, _window, _cx| {
-                println!("I have been clicked!");
-            })
+            .on_mouse_down(
+                MouseButton::Left,
+                cx.listener(|_this, _event, _window, cx| {
+                    cx.emit(ClickButtonEvent::LeftClick);
+                }),
+            )
+            .on_mouse_down(
+                MouseButton::Right,
+                cx.listener(|_this, _event, _window, cx| {
+                    cx.emit(ClickButtonEvent::RightClick);
+                }),
+            )
+            .on_mouse_down(
+                MouseButton::Middle,
+                cx.listener(|_this, _event, _window, cx| {
+                    cx.emit(ClickButtonEvent::MiddleClick);
+                }),
+            )
     }
 }
