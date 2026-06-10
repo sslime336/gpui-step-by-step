@@ -1,5 +1,6 @@
 mod base_view;
 mod components;
+mod counter;
 
 use gpui::{AppContext, Application, Bounds, Point, Size, WindowBounds, WindowOptions, px};
 

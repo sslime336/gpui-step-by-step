@@ -1,53 +1,44 @@
 use gpui::{
-    AppContext, Context, Entity, IntoElement, ParentElement, Render, Styled, Subscription, Window,
-    div, rgb,
+    AppContext, Context, Entity, FocusHandle, InteractiveElement, IntoElement, MouseButton,
+    MouseDownEvent, ParentElement, Render, Styled, Window, div, rgb,
 };
 
-use crate::components::button::{Button, ClickButtonEvent};
+use crate::counter::Counter;
 
 pub struct BaseView {
-    button: Entity<Button>,
-    count: isize,
-    #[allow(dead_code)]
-    subscription: Subscription,
+    counter_1: Entity<Counter>,
+    counter_2: Entity<Counter>,
+    focus_handle: FocusHandle,
 }
 impl BaseView {
     pub fn new(cx: &mut Context<Self>) -> BaseView {
-        let button = cx.new(|_| Button::new("click me"));
-        let subscription = cx.subscribe(
-            &button,
-            |base_view, _button, event: &ClickButtonEvent, cx| {
-                match event {
-                    ClickButtonEvent::LeftClick => {
-                        base_view.count = base_view.count.saturating_add(1)
-                    }
-                    ClickButtonEvent::RightClick => {
-                        base_view.count = base_view.count.saturating_sub(1)
-                    }
-                    ClickButtonEvent::MiddleClick => base_view.count = 0,
-                };
-                cx.notify();
-            },
-        );
+        let counter_1 = cx.new(|cx| Counter::new(cx));
+        let counter_2 = cx.new(|cx| Counter::new(cx));
         BaseView {
-            button,
-            count: 0,
-            subscription,
+            counter_1,
+            counter_2,
+            focus_handle: cx.focus_handle(),
         }
     }
 }
 
 impl Render for BaseView {
-    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
             .flex()
-            .flex_col()
             .gap_2()
             .size_full()
+            .p_20()
             .items_center()
             .justify_center()
             .bg(rgb(0xffffff))
-            .child(format!("当前计数 {}", self.count))
-            .child(self.button.clone())
+            .child(self.counter_1.clone())
+            .child(self.counter_2.clone())
+            .on_mouse_down(
+                MouseButton::Left,
+                cx.listener(|this, _: &MouseDownEvent, window, _cx| {
+                    window.focus(&this.focus_handle);
+                }),
+            )
     }
 }
